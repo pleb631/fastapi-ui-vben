@@ -1,6 +1,7 @@
 import os
 from dotenv import load_dotenv, find_dotenv
 from pydantic_settings import BaseSettings
+from pydantic_core import MultiHostUrl
 from typing import List
 
 
@@ -34,6 +35,25 @@ class Config(BaseSettings):
 
     # 二维码过期时间
     QRCODE_EXPIRE: int = 60 * 1
+
+
+    MYSQL_SERVER: str
+    MYSQL_PORT: int = 3306
+    MYSQL_USER: str
+    MYSQL_PASSWORD: str = ""
+    MYSQL_DB: str = ""
+
+    @property
+    def DATABASE_URL(self) -> str:
+        return MultiHostUrl.build(
+            scheme="mysql+aiomysql",
+            username=self.MYSQL_USER,
+            password=self.MYSQL_PASSWORD,
+            host=self.MYSQL_SERVER,
+            port=self.MYSQL_PORT,
+            path=self.MYSQL_DB,
+            query="charset=utf8mb4",
+        )
 
 
 settings = Config()

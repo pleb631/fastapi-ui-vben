@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>注册页面</title>
+</head>
+
+<body>
+    <form id="regForm">
+        <label>
+            用户名:
+            <input type="text" placeholder="请输入用户名" name="username">
+        </label>
+        <label>
+            密码:
+            <input type="password" placeholder="请设置密码" name="password">
+        </label>
+        <button type="submit">注册</button>
+    </form>
+    <script>
+        document.getElementById("regForm").addEventListener("submit", function (e) {
+            e.preventDefault();  // 阻止默认 GET 提交
+
+            const data = {
+                username: e.target.username.value,
+                password: e.target.password.value
+            };
+
+            fetch("/reg/form", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            }).then(res => res.text())
+                .then(html => {
+                    document.open();
+                    document.write(html);   // 👈 把返回的 HTML 写进当前页面
+                    document.close();
+                });
+        });
+    </script>
+</body>
+
+</html>

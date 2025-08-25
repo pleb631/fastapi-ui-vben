@@ -1,0 +1,67 @@
+from fastapi import APIRouter, Request, Depends
+from starlette.responses import HTMLResponse
+from sqlmodel import select
+
+
+from db.models.user import User
+from db.schemas.user import UserCreate
+from db.session import SessionDep
+
+
+views_router = APIRouter()
+
+
+@views_router.get("/items/{id}", response_class=HTMLResponse)
+async def home(request: Request, id: str):
+
+    return request.app.state.views.TemplateResponse(
+        "index.html", {"request": request, "id": id}
+    )
+
+
+@views_router.get("/reg", response_class=HTMLResponse)
+async def reg_page(req: Request):
+    return req.app.state.views.TemplateResponse("reg_page.html", {"request": req})
+
+
+@views_router.post("/reg/form", response_class=HTMLResponse)
+async def result_page(
+    *,
+    req: Request,
+    userinfo: UserCreate,
+    session: SessionDep,
+):
+
+    user = User(username=userinfo.username, password=userinfo.password)
+    session.add(user)
+    await session.commit()
+    await session.refresh(user)
+    print("插入的自增ID", user.id)
+    print("插入的用户名", user.username)
+
+    user_list = await session.execute(select(User))
+    user_list = user_list.scalars().all()
+    for user in user_list:
+        print(f"用户:{user.username}", user)
+
+    result = await session.execute(
+        select(User).where(User.username == userinfo.username)
+    )
+    user = result.scalars().first()
+
+    if not user:
+        print("")
+        return {"info": "没有查询到用户"}
+
+    return req.app.state.views.TemplateResponse(
+        "reg_result.html",
+        {"request": req, "username": user.username, "password": user.password},
+    )
+
+
+@views_router.get("/get")
+async def get_all_user(*, session: SessionDep):
+
+    user = await session.execute(select(User))
+    user = user.scalars().all()
+    return user
