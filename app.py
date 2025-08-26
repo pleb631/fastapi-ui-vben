@@ -46,9 +46,9 @@ app.include_router(all_router)
 app.add_middleware(Middleware)
 app.add_middleware(
     SessionMiddleware,
-    secret_key="session",
-    session_cookie="f_id",
-    # max_age=4
+    secret_key=settings.SECRET_KEY,
+    session_cookie=settings.SESSION_COOKIE,
+    max_age=settings.SESSION_MAX_AGE
 )
 app.add_middleware(
     CORSMiddleware,
