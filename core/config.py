@@ -54,6 +54,7 @@ class Config(BaseSettings):
             path=self.MYSQL_DB,
             query="charset=utf8mb4",
         )
+    REDIS_URL: str = f"redis://{os.getenv('REDIS_HOST', '127.0.0.1')}:{os.getenv('REDIS_PORT', 6379)}"
 
 
 settings = Config()

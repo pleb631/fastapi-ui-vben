@@ -1,17 +1,17 @@
-from fastapi import APIRouter, Request, Depends
+from fastapi import APIRouter, Request
 from starlette.responses import HTMLResponse
 from sqlmodel import select
 
 
 from db.models.user import User
 from db.schemas.user import UserCreate
-from db.session import SessionDep
+from core.session import SessionDep
 
 
-views_router = APIRouter()
+user_router = APIRouter()
 
 
-@views_router.get("/items/{id}", response_class=HTMLResponse)
+@user_router.get("/items/{id}", response_class=HTMLResponse)
 async def home(request: Request, id: str):
 
     return request.app.state.views.TemplateResponse(
@@ -19,12 +19,12 @@ async def home(request: Request, id: str):
     )
 
 
-@views_router.get("/reg", response_class=HTMLResponse)
+@user_router.get("/reg", response_class=HTMLResponse)
 async def reg_page(req: Request):
     return req.app.state.views.TemplateResponse("reg_page.html", {"request": req})
 
 
-@views_router.post("/reg/form", response_class=HTMLResponse)
+@user_router.post("/reg/form", response_class=HTMLResponse)
 async def result_page(
     *,
     req: Request,
@@ -59,7 +59,7 @@ async def result_page(
     )
 
 
-@views_router.get("/get")
+@user_router.get("/get")
 async def get_all_user(*, session: SessionDep):
 
     user = await session.execute(select(User))
