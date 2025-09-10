@@ -3,7 +3,7 @@ from starlette.responses import HTMLResponse
 from sqlmodel import select
 from typing import Optional
 
-from db.models.user import User
+from db.models.base import User
 from db.schemas.user import UserCreate
 from core.session import SessionDep
 

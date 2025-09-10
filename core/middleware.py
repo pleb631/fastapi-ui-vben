@@ -3,7 +3,7 @@ from starlette.datastructures import MutableHeaders
 from starlette.types import ASGIApp, Receive, Scope, Send, Message
 from fastapi import Request
 
-from core.helper import random_str
+from core.utils import random_str
 
 
 class Middleware:

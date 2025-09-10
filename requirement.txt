@@ -1,13 +1,14 @@
 fastapi[all]
-aioredis
 cos-python-sdk-v5
 PyJWT
 python-dotenv
-tortoise-orm[aiomysql]
 tencentcloud-sdk-python
 wechatpy
 qrcode[pil]
 passlib
-sqlmodel
 qcloud-python-sts
 python-alipay-sdk
+pydantic-settings>=2.10.1
+redis>=6.4.0
+sqlmodel>=0.0.24
+aiomysql
