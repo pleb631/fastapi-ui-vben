@@ -1,7 +1,9 @@
 from sqlmodel import select
-from db.models.base import User,Role,Access,RoleAccessLink,UserRoleLink
+from db.models.base import User, Role, Access, RoleAccessLink, UserRoleLink
+from typing import List, Optional
 
-async def create_user(session, username,password):
+
+async def create_user(session, username, password) -> Optional[User]:
     result = await session.execute(select(User).where(User.username == username))
     if result.scalars().first():
         return None
@@ -11,14 +13,24 @@ async def create_user(session, username,password):
     await session.refresh(new_user)
     return new_user
 
-async def get_user_by_id(session, user_id: int):
-    
-    result = await session.execute(select(User).where(User.id == user_id))
+
+async def get_user(
+    session, user_id: Optional[int] = None, username: Optional[str] = None
+) -> Optional[User]:
+    if user_id is None and username is None:
+        return None
+    stmt = select(User)
+    if user_id is not None:
+        stmt = stmt.where(User.id == user_id)
+    if username is not None:
+        stmt = stmt.where(User.username == username)
+
+    result = await session.execute(stmt)
     user = result.scalars().first()
     return user
 
 
-async def delete_user(session, user_id: int):
+async def delete_user(session, user_id: int) -> Optional[User]:
     result = await session.execute(select(User).where(User.id == user_id))
     user = result.scalars().first()
     if not user:
@@ -27,7 +39,8 @@ async def delete_user(session, user_id: int):
     await session.commit()
     return user
 
-async def get_user_rules(session, user_id: int):
+
+async def get_user_rules(session, user_id: int) -> List[Access]:
     stmt = (
         select(Access)
         .join(RoleAccessLink, RoleAccessLink.access_id == Access.id)

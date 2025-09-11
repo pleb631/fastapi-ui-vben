@@ -27,6 +27,9 @@ async def home(request: Request, session_id: Optional[str] = Cookie(None)):
 async def reg_page(req: Request):
     return req.app.state.views.TemplateResponse("reg_page.html", {"request": req})
 
+@user_router.get("/login", response_class=HTMLResponse)
+async def login_page(req: Request):
+    return req.app.state.views.TemplateResponse("login.html", {"request": req})
 
 @user_router.post("/reg/form", response_class=HTMLResponse)
 async def result_page(

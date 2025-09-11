@@ -8,3 +8,8 @@ class UserCreate(SQLModel):
     user_type: bool = Field(
         default=False, description="用户类型 True:超级管理员 False:普通管理员"
     )
+
+
+class AccountLogin(SQLModel):
+    username: str = Field(min_length=3, max_length=10)
+    password: str = Field(min_length=8, max_length=12)

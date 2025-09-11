@@ -50,8 +50,9 @@ async def init_db():
         if not user:
             user = User(
                 username="root",
-                password="123456",
-                type=True,
+                password="$pbkdf2-sha256$29000$.b83RkgpRSjlPCckpBQihA$R4gYIXJG.4i2NWP0/3fGydG/xJGTO.WfhQtg7iJGqU8",   #  12345678
+                user_type=True,
+                user_status=True,
             )
             session.add(user)
             await session.commit()
