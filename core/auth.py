@@ -16,8 +16,11 @@ from db import curd
 from core.session import SessionDep
 
 
-
-OAuth2 = OAuth2PasswordBearer(tokenUrl="", auto_error=False)
+oauth = OAuth2PasswordBearer(
+    settings.SWAGGER_UI_OAUTH2_REDIRECT_URL,
+    scheme_name="User",
+    scopes={"is_admin": "超级管理员", "not_admin": "普通管理员"},
+)
 
 
 def create_access_token(data: dict):
@@ -37,23 +40,12 @@ def create_access_token(data: dict):
 
 
 async def check_permissions(
-    req: Request, security_scopes: SecurityScopes, session: SessionDep, token=Depends(OAuth2),
+    req: Request,
+    security_scopes: SecurityScopes,
+    session: SessionDep,
+    token=Depends(oauth),
 ):
-    # from fastapi.security.oauth2 import get_authorization_scheme_param 
-    # print("@token", token)
-    # print("@scopes", security_scopes.scopes)
-    
-    # authorization: str = req.headers.get("Authorization")
-    # scheme, param = get_authorization_scheme_param(authorization)
 
-    # if not authorization or scheme.lower() != "bearer":
-    #     raise HTTPException(
-    #         status_code=status.HTTP_401_UNAUTHORIZED,
-    #         detail="Not authenticated",
-    #         headers={"WWW-Authenticate": "Bearer"},
-    #     )
-
-    # token = param
     try:
 
         payload = jwt.decode(
@@ -95,7 +87,6 @@ async def check_permissions(
             headers={"WWW-Authenticate": f"Bearer {token}"},
         )
 
-
     check_user = await curd.user.get_user(session, user_id=user_id)
     if not check_user or check_user.user_status != 1:
         raise HTTPException(
@@ -106,16 +97,18 @@ async def check_permissions(
     if security_scopes.scopes:
         print("当前域：", security_scopes.scopes)
 
-        scopes:List[Access] = []
+        scopes: List[Access] = []
         if not user_type and security_scopes.scopes:
-            scopes:List[Access] = await curd.user.get_user_rules(session, user_id=check_user.id)
+            scopes: List[Access] = await curd.user.get_user_rules(
+                session, user_id=check_user.id
+            )
 
             if not scopes:
                 raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="用户没有权限!",
-                headers={"WWW-Authenticate": f"Bearer {token}"},
-            )
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="用户没有权限!",
+                    headers={"WWW-Authenticate": f"Bearer {token}"},
+                )
             for scope in security_scopes.scopes:
                 if scope not in [s.scopes for s in scopes]:
                     raise HTTPException(
@@ -127,4 +120,3 @@ async def check_permissions(
 
     req.state.user_id = user_id
     req.state.user_type = user_type
-        

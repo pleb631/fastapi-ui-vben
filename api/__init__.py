@@ -1,6 +1,8 @@
 from fastapi import APIRouter
 
-from .user import login_router
+from .user import user_router
+from .test import test_router
 
-api_router = APIRouter()
-api_router.include_router(login_router)
+api_router = APIRouter(prefix="/api/v1", tags=["api路由"])
+api_router.include_router(user_router)
+api_router.include_router(test_router)

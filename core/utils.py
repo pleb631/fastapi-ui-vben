@@ -10,11 +10,6 @@ def random_str():
     return str(only)
 
 def cacheable(ttl: int = 3600, key_prefix: str = "cache"):
-    """
-    Redis 缓存装饰器
-    :param ttl: 缓存过期时间（秒）
-    :param key_prefix: 缓存 key 前缀
-    """
     def decorator(func: Callable):
         @functools.wraps(func)
         async def wrapper(*args, **kwargs) -> Any:
@@ -35,22 +30,13 @@ def cacheable(ttl: int = 3600, key_prefix: str = "cache"):
 
 
 def en_password(psw: str):
-    """
-    密码加密
-    :param psw: 需要加密的密码
-    :return: 加密后的密码
-    """
+
     password = pbkdf2_sha256.hash(psw)
     return password
 
 
 def check_password(password: str, old: str):
-    """
-    密码校验
-    :param password: 用户输入的密码
-    :param old: 数据库密码
-    :return: Boolean
-    """
+
     check = pbkdf2_sha256.verify(password, old)
     if check:
         return True
