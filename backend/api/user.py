@@ -2,13 +2,13 @@ from fastapi import APIRouter, Security
 from starlette.responses import JSONResponse
 
 from core.session import SessionDep
-from db import curd
+import curd
 from core.response import fail, success
-from db.schemas.user import UserCreate, AccountLogin
+from schemas.user import UserCreate, AccountLogin
 from core.utils import en_password, check_password
 from core.auth import check_permissions, create_access_token
-from db.models.base import User
-from db.schemas.user import UserLogin, CurrentUser
+from models.base import User
+from schemas.user import UserLogin, CurrentUser
 
 user_router = APIRouter(prefix="/user")
 

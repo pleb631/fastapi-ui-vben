@@ -1,5 +1,5 @@
 from sqlmodel import select
-from db.models.base import User, Role, Access, RoleAccessLink, UserRoleLink
+from models.base import User, Role, Access, RoleAccessLink, UserRoleLink
 from typing import List, Optional
 
 

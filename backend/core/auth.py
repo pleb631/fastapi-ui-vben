@@ -10,9 +10,9 @@ from pydantic import ValidationError
 from typing import List
 
 
-from db.models.base import Access
-from core.config import settings
-from db import curd
+from models.base import Access
+from config import settings
+import curd
 from core.session import SessionDep
 
 

@@ -10,7 +10,7 @@ from fastapi.openapi.utils import get_openapi
 
 
 
-from core.config import settings
+from config import settings
 from core.events import startup, stopping
 from core.router import all_router
 from core.middleware import Middleware
