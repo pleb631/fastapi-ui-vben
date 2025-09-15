@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Security
+from fastapi import APIRouter, Security,Request
 from starlette.responses import JSONResponse
 
 from core.session import SessionDep
@@ -14,12 +14,13 @@ user_router = APIRouter(prefix="/user")
 
 
 @user_router.get(
-    "/info/{user_id}",
+    "/info",
     response_model=CurrentUser,
     summary="用户信息接口",
     dependencies=[Security(check_permissions)],
 )
-async def get_user_info(user_id: int, session: SessionDep):
+async def get_user_info(req: Request, session: SessionDep):
+    user_id = req.state.user_id
     user_data = await curd.user.get_user(session, user_id=user_id)
     if not user_data:
         return fail(msg=f"用户ID{user_id}不存在!")
@@ -82,10 +83,9 @@ async def account_login(post: AccountLogin, session: SessionDep):
 
     return JSONResponse(
         {
-            "code": 200,
+            "code": 0,
             "message": "登陆成功😄",
-            "data": {"token": "Bearer " + jwt_token},
+            "data": {"access_token": "Bearer " + jwt_token, "expires_in": 3600},
         },
         status_code=200,
-        headers={"Set-Cookie": "X-token=Bearer " + jwt_token},
     )

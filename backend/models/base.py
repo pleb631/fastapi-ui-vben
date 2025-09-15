@@ -98,7 +98,7 @@ class User(SQLModel, table=True):
     user_email: Optional[str] = Field(default=None, max_length=255, description="邮箱")
     full_name: Optional[str] = Field(default=None, max_length=255, description="姓名")
     user_status: int = Field(default=0, description="0未激活 1正常 2禁用")
-    header_img: Optional[str] = Field(default=None, max_length=255, description="头像")
+    avatar: Optional[str] = Field(default=None, max_length=255, description="头像")
     gender: int = Field(default=0, description="0未知 1男 2女")
     remarks: Optional[str] = Field(default=None, max_length=30, description="备注")
     client_host: Optional[str] = Field(

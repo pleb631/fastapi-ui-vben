@@ -20,6 +20,7 @@ export const defaultResponseInterceptor = ({
 }): ResponseInterceptorConfig => {
   return {
     fulfilled: (response) => {
+      console.log('response', response);
       const { config, data: responseData, status } = response;
 
       if (config.responseReturn === 'raw') {

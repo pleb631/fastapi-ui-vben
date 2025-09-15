@@ -1,6 +1,5 @@
 from sqlmodel import Field, SQLModel
-from fastapi import Form
-from typing import Optional
+from typing import Dict, List, Optional
 from .base import BaseResp
 class UserCreate(SQLModel):
 
@@ -13,7 +12,9 @@ class UserCreate(SQLModel):
 
 class AccountLogin(SQLModel):
     username: str = Field(min_length=3, max_length=10)
-    password: str = Field(min_length=8, max_length=12)
+    password: str = Field(min_length=6, max_length=12)
+    captcha: bool
+    selectAccount: str
 
 
 
@@ -35,9 +36,9 @@ class CurrentUser(BaseResp):
     data: UserInfo
 
 class AccessToken(SQLModel):
-    token: Optional[str]
+    access_token: Optional[str]
     expires_in: Optional[int]
 
 
 class UserLogin(BaseResp):
-    data: AccessToken
+    data: AccessToken|Dict

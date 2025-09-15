@@ -1,0 +1,90 @@
+Generic single-database configuration with an async dbapi.
+
+# init
+
+```bash
+# alembic init alembic # 同步
+
+alembic init -t async alembic # 异步
+```
+
+参考下面，修改`alembic/env.py`
+
+```python
+# alembic/env.py
+from logging.config import fileConfig
+from sqlalchemy import engine_from_config, pool
+from alembic import context
+
+from sqlmodel import SQLModel
+from app.models import *  # 导入模型，填充 metadata
+
+config = context.config
+fileConfig(config.config_file_name)
+
+target_metadata = SQLModel.metadata
+
+def run_migrations_offline():
+    url = config.get_main_option("sqlalchemy.url")
+    context.configure(
+        url=url,
+        target_metadata=target_metadata,
+        literal_binds=True,
+        compare_type=True,       # 字段类型变化也能检测
+        compare_server_default=True,
+        render_as_batch=True,    # SQLite 需要这个支持 ALTER 之类
+    )
+    with context.begin_transaction():
+        context.run_migrations()
+
+def run_migrations_online():
+    connectable = engine_from_config(
+        config.get_section(config.config_ini_section),
+        prefix="sqlalchemy.",
+        poolclass=pool.NullPool,
+        future=True,
+    )
+    with connectable.connect() as connection:
+        context.configure(
+            connection=connection,
+            target_metadata=target_metadata,
+            compare_type=True,
+            compare_server_default=True,
+            render_as_batch=True,
+        )
+        with context.begin_transaction():
+            context.run_migrations()
+
+if context.is_offline_mode():
+    run_migrations_offline()
+else:
+    run_migrations_online()
+
+```
+
+在 alembic.ini 里填数据库 URL
+
+```alembic.ini
+sqlalchemy.url = mysql+aiomysql://root:123456@localhost:3306/mysql_dbtest
+```
+
+# 首次生成
+
+```bash
+alembic revision --autogenerate -m "init tables"
+alembic upgrade head
+```
+
+# 迁移
+
+```bash
+alembic revision --autogenerate -m "add age to users"
+# 打开 alembic/versions/xxxx_add_age.py 检查是否合理
+alembic upgrade head
+```
+
+# 克隆代码后执行
+
+```bash
+alembic upgrade head
+```
