@@ -5,7 +5,7 @@ from typing import Annotated
 from fastapi import Depends
 
 from config import settings
-from models.base import User
+from models import *
 
 # ⚠️ 确认 settings.DATABASE_URL 用的是异步驱动，比如：
 # MySQL:  mysql+aiomysql://user:password@localhost:3306/mydb

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Security,Request
+from fastapi import APIRouter, Security, Request
 from starlette.responses import JSONResponse
 
 from core.session import SessionDep
@@ -8,14 +8,14 @@ from schemas.user import UserCreate, AccountLogin
 from core.utils import en_password, check_password
 from core.auth import check_permissions, create_access_token
 from models.base import User
-from schemas.user import UserLogin, CurrentUser
+from schemas.user import UserLoginResp, UserInfo, UserInfoResp,UserCodesResp
 
 user_router = APIRouter(prefix="/user")
 
 
 @user_router.get(
     "/info",
-    response_model=CurrentUser,
+    response_model=UserInfoResp,
     summary="用户信息接口",
     dependencies=[Security(check_permissions)],
 )
@@ -24,7 +24,9 @@ async def get_user_info(req: Request, session: SessionDep):
     user_data = await curd.user.get_user(session, user_id=user_id)
     if not user_data:
         return fail(msg=f"用户ID{user_id}不存在!")
-    return success(msg="用户信息", data=user_data)
+    user_info = UserInfo(**user_data.model_dump())
+
+    return success(msg="用户信息", data=user_info)
 
 
 @user_router.post(
@@ -41,6 +43,7 @@ async def user_add(
     create_user = await curd.user.create_user(session, post.username, password)
     if not create_user:
         return fail(msg=f"用户{post.username}创建失败!")
+
     return success(msg=f"用户{create_user.username}创建成功")
 
 
@@ -68,7 +71,11 @@ async def get_user_rules(user_id: int, session: SessionDep):
     return success(msg="用户权限", data=data)
 
 
-@user_router.post("/login", summary="用户登陆接口", response_model=UserLogin)
+@user_router.post(
+    "/login",
+    summary="用户登陆接口",
+    response_model=UserLoginResp,
+)
 async def account_login(post: AccountLogin, session: SessionDep):
 
     get_user: User = await curd.user.get_user(session, username=post.username)
@@ -81,11 +88,23 @@ async def account_login(post: AccountLogin, session: SessionDep):
     jwt_data = {"user_id": get_user.id, "user_type": get_user.user_type}
     jwt_token = create_access_token(data=jwt_data)
 
-    return JSONResponse(
-        {
-            "code": 0,
-            "message": "登陆成功😄",
-            "data": {"access_token": "Bearer " + jwt_token, "expires_in": 3600},
-        },
-        status_code=200,
+    return success(
+        msg="登陆成功😄",
+        data={"access_token": "Bearer " + jwt_token, "expires_in": 3600},
     )
+
+
+@user_router.get(
+    "/codes",
+    tags=["获取用户信息"],
+    dependencies=[Security(check_permissions)],
+    response_model=UserCodesResp,
+)
+async def get_user_codes(req: Request, session: SessionDep):
+    user_id = req.state.user_id
+    user_data = await curd.user.get_user(session, user_id=user_id)
+    if not user_data:
+        return fail(msg=f"用户ID{user_id}不存在!")
+    else:
+        codes = "admin" if user_data.user_type else "user"
+        return success(msg="用户权限", data=[codes])
