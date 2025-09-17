@@ -8,7 +8,7 @@ class UserCreate(SQLModel):
     username: str = Field(
         index=True, max_length=20, description="用户名")
     password: str = Field(max_length=255, description="密码")
-    userType: bool = Field(
+    user_type: bool = Field(
         default=False,
         description="用户类型 True:超级管理员 False:普通管理员",
         alias="userType",
