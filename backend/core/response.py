@@ -7,6 +7,8 @@ def _base_response(code, msg, data=None):
 
 
 def success(data=None, msg=""):
+    if data is None:
+        data = {}
     return _base_response(0, msg, data)
 
 

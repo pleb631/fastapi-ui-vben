@@ -1,6 +1,7 @@
-from fastapi import APIRouter, Security, Request
+from fastapi import APIRouter, Security, Request, Query
 from starlette.responses import JSONResponse
 import datetime
+from typing import Annotated
 
 from core.session import SessionDep
 import curd
@@ -9,7 +10,14 @@ from schemas.user import UserCreate, AccountLogin
 from core.utils import en_password, check_password
 from core.auth import check_permissions, create_access_token
 from models.base import User
-from schemas.user import UserLoginResp, UserInfo, UserInfoResp, UserCodesResp
+from schemas.user import (
+    UserLoginResp,
+    UserInfo,
+    UserInfoResp,
+    UserCodesResp,
+    UserListItem,
+    UserListResp,
+)
 from config import settings
 
 
@@ -50,7 +58,7 @@ async def user_add(
     return success(msg=f"用户{create_user.username}创建成功")
 
 
-@user_router.post(
+@user_router.delete(
     "/del",
     summary="删除用户接口",
     response_class=JSONResponse,
@@ -91,7 +99,7 @@ async def account_login(post: AccountLogin, session: SessionDep):
     jwt_data = {
         "user_id": get_user.id,
         "user_type": get_user.user_type,
-        'exp': datetime.datetime.utcnow()
+        "exp": datetime.datetime.utcnow()
         + datetime.timedelta(minutes=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES),
     }
     jwt_token = create_access_token(data=jwt_data)
@@ -118,3 +126,23 @@ async def get_user_codes(req: Request, session: SessionDep):
     else:
         codes = "admin" if user_data.user_type else "user"
         return success(msg="用户权限", data=[codes])
+
+
+@user_router.get(
+    "/list",
+    response_model=UserListResp,
+    summary="用户列表接口",
+    dependencies=[Security(check_permissions)],
+)
+async def user_list(
+    *,
+    size: Annotated[int, Query(gt=0)] = 10,
+    current: Annotated[int, Query(ge=1)] = 1,
+    username: Annotated[str, Query()] = None,
+    session: SessionDep,
+):
+
+    user_list, total = await curd.user.get_all_user(size, current, session)
+    user_list = [UserListItem(**user.model_dump()) for user in user_list]
+
+    return success(msg="用户列表", data=dict(items=user_list, total=total))

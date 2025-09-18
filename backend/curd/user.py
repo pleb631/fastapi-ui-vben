@@ -1,6 +1,6 @@
 from sqlmodel import select
 from models.base import User, Role, Access, RoleAccessLink, UserRoleLink
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 
 async def create_user(session, username, password) -> Optional[User]:
@@ -52,3 +52,11 @@ async def get_user_rules(session, user_id: int) -> List[Access]:
     )
     result = await session.execute(stmt)
     return result.scalars().all()
+
+
+async def get_all_user(size: int, current: int, session) -> Tuple[List[User], int]:
+    stmt = select(User).offset((current - 1) * size).limit(size)
+    result = await session.execute(stmt)
+    data = result.scalars().all()
+    total = await session.execute(select(User))
+    return data, len(total.scalars().all()) if total else 0
