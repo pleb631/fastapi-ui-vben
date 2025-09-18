@@ -37,25 +37,3 @@ async def get_session():
 
 
 SessionDep = Annotated[AsyncSession, Depends(get_session)]
-
-async def init_db():
-    async with engine.begin() as conn:
-
-        # await conn.run_sync(SQLModel.metadata.drop_all)
-        await conn.run_sync(SQLModel.metadata.create_all)
-
-    async with async_session_maker() as session:
-        result = await session.execute(select(User).where(User.username == "root"))
-        user = result.scalars().first()
-        if not user:
-            user = User(
-                username="root",
-                password="$pbkdf2-sha256$29000$.b83RkgpRSjlPCckpBQihA$R4gYIXJG.4i2NWP0/3fGydG/xJGTO.WfhQtg7iJGqU8",   #  12345678
-                user_type=True,
-                user_status=True,
-            )
-            session.add(user)
-            await session.commit()
-            await session.refresh(user)
-        else:
-            print("检测到用户已存在")

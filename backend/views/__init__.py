@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from .user import user_router
+from .home import user_router
 
 
 views_router = APIRouter(prefix="/views", tags=["视图"])

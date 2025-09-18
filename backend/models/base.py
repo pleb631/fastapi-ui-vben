@@ -1,7 +1,7 @@
 from typing import Optional, List
 from sqlmodel import Field, SQLModel, Relationship
 from datetime import datetime
-from sqlalchemy import Column, ForeignKey, func, DateTime, Text
+from sqlalchemy import Column, ForeignKey, func, DateTime, Text, Integer
 
 
 def create_time_col():
@@ -118,7 +118,7 @@ class Access(SQLModel, table=True):
     parent_id: Optional[int] = Field(
         default=None,
         description="父级权限ID",
-        sa_column=Column(ForeignKey("access.id", ondelete="CASCADE"), index=True),
+        sa_column=Column(Integer, ForeignKey("access.id", ondelete="CASCADE"), index=True, nullable=True),
     )
 
     parent: Optional["Access"] = Relationship(

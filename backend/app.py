@@ -14,12 +14,7 @@ from config import settings
 from core.events import startup, stopping
 from core.router import all_router
 from core.middleware import Middleware
-from core.exception import (
-    http_error_handler,
-    http422_error_handler,
-    unicorn_exception_handler,
-    UnicornException,
-)
+from core import exception
 
 
 # 事件监听
@@ -86,9 +81,9 @@ async def redoc_html():
 
 
 
-app.add_exception_handler(HTTPException, http_error_handler)
-app.add_exception_handler(RequestValidationError, http422_error_handler)
-app.add_exception_handler(UnicornException, unicorn_exception_handler)
+app.add_exception_handler(HTTPException, exception.http_error_handler)
+app.add_exception_handler(RequestValidationError, exception.http422_error_handler)
+app.add_exception_handler(exception.UnicornException, exception.unicorn_exception_handler)
 
 
 app.include_router(all_router)

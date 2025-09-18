@@ -99,8 +99,6 @@ async def account_login(post: AccountLogin, session: SessionDep):
     jwt_data = {
         "user_id": get_user.id,
         "user_type": get_user.user_type,
-        "exp": datetime.datetime.utcnow()
-        + datetime.timedelta(minutes=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES),
     }
     jwt_token = create_access_token(data=jwt_data)
 
