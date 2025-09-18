@@ -86,6 +86,12 @@ async def check_permissions(
             detail="无效凭证",
             headers={"WWW-Authenticate": f"Bearer {token}"},
         )
+    except jwt.ExpiredSignatureError:
+            raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="凭证已经过期",
+            headers={"WWW-Authenticate": f"Bearer {token}"},
+        )
 
     check_user = await curd.user.get_user(session, user_id=user_id)
     if not check_user or check_user.user_status != 1:

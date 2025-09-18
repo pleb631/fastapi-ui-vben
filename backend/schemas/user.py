@@ -40,7 +40,6 @@ class UserInfoResp(BaseResp):
 
 class AccessToken(SQLModel):
     access_token: Optional[str]
-    expires_in: Optional[int]
 
 
 class UserLoginResp(BaseResp):

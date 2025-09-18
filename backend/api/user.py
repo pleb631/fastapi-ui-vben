@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Security, Request
 from starlette.responses import JSONResponse
+import datetime
 
 from core.session import SessionDep
 import curd
@@ -8,7 +9,9 @@ from schemas.user import UserCreate, AccountLogin
 from core.utils import en_password, check_password
 from core.auth import check_permissions, create_access_token
 from models.base import User
-from schemas.user import UserLoginResp, UserInfo, UserInfoResp,UserCodesResp
+from schemas.user import UserLoginResp, UserInfo, UserInfoResp, UserCodesResp
+from config import settings
+
 
 user_router = APIRouter(prefix="/user")
 
@@ -85,12 +88,19 @@ async def account_login(post: AccountLogin, session: SessionDep):
         return fail(msg=f"用户{post.username}密码验证失败!")
     if not get_user.user_status:
         return fail(msg=f"用户{post.username}已被管理员禁用!")
-    jwt_data = {"user_id": get_user.id, "user_type": get_user.user_type}
+    jwt_data = {
+        "user_id": get_user.id,
+        "user_type": get_user.user_type,
+        'exp': datetime.datetime.utcnow()
+        + datetime.timedelta(minutes=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES),
+    }
     jwt_token = create_access_token(data=jwt_data)
 
     return success(
         msg="登陆成功😄",
-        data={"access_token": "Bearer " + jwt_token, "expires_in": 3600},
+        data={
+            "access_token": "Bearer " + jwt_token,
+        },
     )
 
 
