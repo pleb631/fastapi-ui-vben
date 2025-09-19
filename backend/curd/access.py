@@ -23,4 +23,6 @@ async def update_role_access(session: AsyncSession, role_id: int, access: List[i
     links = [RoleAccessLink(role_id=role_id, access_id=i) for i in access]
     session.add_all(links)
     await session.commit()
-    return await get_role_access(session, role_id)
+    access = await get_role_access(session, role_id)
+    return access
+    

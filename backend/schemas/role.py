@@ -6,16 +6,10 @@ from .base import BaseResp
 
 
 class CreateRole(SQLModel):
+    id: Optional[int] = Field(default=None)
     role_name: str = Field(min_length=3, max_length=10)
-    role_status: Optional[bool] = False
-    role_desc: Optional[str] = Field(max_length=255)
-
-
-class UpdateRole(SQLModel):
-    id: int
-    role_name: str
-    role_status: Optional[bool]
-    role_desc: Optional[str]
+    role_status: Optional[bool] = Field(default=False)
+    role_desc: Optional[str] = Field(default=None,max_length=255)
 
 
 class RoleItem(SQLModel):

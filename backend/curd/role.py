@@ -1,6 +1,6 @@
 from sqlmodel import select
 from models.base import User, Role, Access, RoleAccessLink, UserRoleLink
-from typing import List, Optional, Sequence, Tuple
+from typing import List, Optional, Dict, Tuple
 from sqlalchemy.ext.asyncio import AsyncSession
 from schemas.role import CreateRole
 
@@ -17,13 +17,13 @@ async def get_user_role(session: AsyncSession, user_id: int) -> List[str]:
     return [i.role_name for i in role.scalars().all()]
 
 
-async def add_role(session: AsyncSession, data: CreateRole) -> Optional[Role]:
+async def add_role(session: AsyncSession, data:Dict) -> Optional[Role]:
     search_role = await session.execute(
-        select(Role).where(Role.role_name == data.role_name)
+        select(Role).where(Role.role_name == data["role_name"])
     )
     if search_role.scalars().first():
         return None
-    role = Role(**data.model_dump())
+    role = Role(**data)
     session.add(role)
     await session.commit()
     return role

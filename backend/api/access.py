@@ -32,6 +32,7 @@ async def get_all_access(role_id: int, session: SessionDep):
     result = [
         {
             "key": i.id,
+            "access_name": i.access_name,
             "parent_id": i.parent_id,
             "scopes": i.scopes,
             "access_desc": i.access_desc,
@@ -41,6 +42,7 @@ async def get_all_access(role_id: int, session: SessionDep):
     tree_data = build_tree(result)
 
     data = {"all_access": tree_data, "role_access": role_access}
+
     return success(msg="当前用户可以下发的权限", data=data)
 
 
@@ -56,4 +58,3 @@ async def update_role_access(post: updateAccess, session: SessionDep):
     )
 
     return success(msg="保存成功!")
-
