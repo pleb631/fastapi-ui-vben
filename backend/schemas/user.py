@@ -5,10 +5,8 @@ from .base import BaseResp
 
 class UserCreate(SQLModel):
     id: Optional[int] = Field(default=None)
-    username: str = Field(
-        index=True, max_length=20, description="用户名")
-    password: str = Field(max_length=255, description="密码")
-
+    username: str = Field(index=True, min_length=3, max_length=10, description="用户名")
+    password: str = Field(min_length=6, max_length=12, description="密码")
 
 
 class AccountLogin(SQLModel):
@@ -46,7 +44,6 @@ class UserCodesResp(BaseResp):
     data: Optional[List[str]]
 
 
-
 class UserListItem(SQLModel):
     id: int
     username: str
@@ -58,12 +55,22 @@ class UserListItem(SQLModel):
     user_status: bool
     avatar: Optional[str]
     gender: int
+    remarks: Optional[str]
 
 
 class UserList(SQLModel):
     total: int
     items: List[UserListItem]
 
-    
+
 class UserListResp(BaseResp):
     data: Optional[UserList]
+
+
+class UpdateUserReq(SQLModel):
+    id: int
+    username: str = Field(min_length=3, max_length=10)
+    nickname: Optional[str] = Field(default=None,)
+    password: Optional[str] = Field(default=None,min_length=6, max_length=12)
+    user_phone: Optional[str] = Field(default=None,regex="^1[34567890]\\d{9}$")
+    user_email: Optional[str] = Field(default=None,)

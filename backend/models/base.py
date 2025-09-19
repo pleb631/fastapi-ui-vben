@@ -88,11 +88,11 @@ class User(SQLModel, table=True):
         link_model=UserRoleLink,
         sa_relationship_kwargs={"passive_deletes": True},
     )
-    username: str = Field(unique=True, max_length=20, description="用户名")
+    username: str = Field(unique=True,min_length=3, max_length=10, description="用户名")
     user_type: bool = Field(
         default=False, description="用户类型 True:超级管理员 False:普通管理员"
     )
-    password: str = Field(max_length=255, description="密码")
+    password: str = Field(min_length=6, max_length=12, description="密码")
     nickname: str = Field(default="pleb", max_length=255, description="昵称")
     user_phone: Optional[str] = Field(default=None, max_length=11, description="手机号")
     user_email: Optional[str] = Field(default=None, max_length=255, description="邮箱")

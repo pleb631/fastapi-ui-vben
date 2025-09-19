@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Security, Request, Query
+from fastapi import APIRouter, Security, Request, Query, Body
 from starlette.responses import JSONResponse
 import datetime
 from typing import Annotated
@@ -17,6 +17,7 @@ from schemas.user import (
     UserCodesResp,
     UserListItem,
     UserListResp,
+    UpdateUserReq,
 )
 from config import settings
 
@@ -130,17 +131,52 @@ async def get_user_codes(req: Request, session: SessionDep):
     "/list",
     response_model=UserListResp,
     summary="用户列表接口",
-    dependencies=[Security(check_permissions)],
+    dependencies=[Security(check_permissions, scopes=["user_query"])],
 )
 async def user_list(
     *,
     size: Annotated[int, Query(gt=0)] = 10,
     current: Annotated[int, Query(ge=1)] = 1,
-    username: Annotated[str, Query()] = None,
+    keyword: str = Query(None),
     session: SessionDep,
 ):
 
-    user_list, total = await curd.user.get_all_user(size, current, session)
+    user_list, total = await curd.user.get_all_user(size, current, session, keyword)
     user_list = [UserListItem(**user.model_dump()) for user in user_list]
 
     return success(msg="用户列表", data=dict(items=user_list, total=total))
+
+
+@user_router.put(
+    "/status",
+    summary="用户状态更新接口",
+    response_class=JSONResponse,
+    dependencies=[Security(check_permissions, scopes=["user_update"])],
+)
+async def update_user_status(
+    session: SessionDep,
+    id: Annotated[int, Body()],
+    user_status: Annotated[bool, Body()],
+):
+    result = await curd.user.update_user(session, id, {"user_status": user_status})
+    if not result:
+        return fail(msg="更新失败!")
+    return success(msg="更新成功!")
+
+
+@user_router.put(
+    "/",
+    summary="用户信息修改接口",
+    response_class=JSONResponse,
+    dependencies=[Security(check_permissions, scopes=["user_update"])],
+)
+async def update_user_info(post: UpdateUserReq, session: SessionDep):
+    data = post.model_dump()
+    password = data.pop("password")
+    if password:
+        data["password"] = en_password(password)
+    data.pop("id")
+    result = await curd.user.update_user(session, post.id, data)
+    if not result:
+        return fail(msg="更新失败!")
+    return success(msg="更新成功!")

@@ -28,6 +28,7 @@ export interface UserListItem {
   user_status: boolean;
   avatar?: string;
   gender: number;
+  remark?: string;
 }
 export interface UserListResp {
   total: number;
@@ -64,4 +65,26 @@ export async function reqRemoveUser(userId: number) {
       user_id: userId,
     },
   });
+}
+
+export async function reqUpdateUserstatus(data: {
+  id: number;
+  user_status: boolean;
+}) {
+  return requestClient.put('/user/status', data);
+}
+
+
+export interface UserInfoReq {
+  id: number;
+  username: string;
+  nickname?: string;
+  password?: string;
+  user_phone?: string;
+  user_email?: string;
+}
+
+
+export  async function reqUpdateUser(data: UserInfoReq) {
+  return requestClient.put('/user', data);
 }

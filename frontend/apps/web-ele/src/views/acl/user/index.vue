@@ -5,8 +5,10 @@
         <el-input placeholder="请你输入搜索用户名" v-model="keyword"></el-input>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" size="default">搜索</el-button>
-        <el-button type="primary" size="default">重置</el-button>
+        <el-button type="primary" size="default" @click="search"
+          >搜索</el-button
+        >
+        <el-button type="primary" size="default" @click="clear">重置</el-button>
       </el-form-item>
     </el-form>
   </el-card>
@@ -54,11 +56,16 @@
           <el-popconfirm
             :title="`你确定要${!row.user_status ? '启用' : '禁用'}${row.username}?`"
             width="260px"
+            @confirm="updateUserstatus(row)"
           >
             <template #reference>
-              <el-button type="primary" size="small" plain>{{
-                !row.user_status ? '启用' : '禁用'
-              }}</el-button>
+              <el-button
+                type="primary"
+                size="small"
+                plain
+                :disabled="row.user_type"
+                >{{ !row.user_status ? '启用' : '禁用' }}</el-button
+              >
             </template>
           </el-popconfirm>
           <el-popconfirm
@@ -67,10 +74,18 @@
             @confirm="deleteUser(row.id)"
           >
             <template #reference>
-              <el-button type="danger" size="small" plain>删除</el-button>
+              <el-button
+                type="danger"
+                size="small"
+                plain
+                :disabled="row.user_type"
+                >删除</el-button
+              >
             </template>
           </el-popconfirm>
-          <el-button type="primary" size="small" plain>编辑</el-button>
+          <el-button type="primary" size="small" plain @click="handleEdit(row)"
+            >编辑</el-button
+          >
         </template>
       </el-table-column>
     </el-table>
@@ -114,6 +129,22 @@
       </div>
     </template>
   </el-drawer>
+  <el-dialog
+    :title="isEdit ? '编辑' : '新增'"
+    v-model="visible"
+    width="700px"
+    destroy-on-close
+    :close-on-click-modal="false"
+    @close="closeDialog"
+  >
+    <TableEdit
+      :form-data="rowData"
+      :options="options"
+      :edit="isEdit"
+      :update="updateData"
+    >
+    </TableEdit>
+  </el-dialog>
 </template>
 <script lang="ts" setup>
 // 引入
@@ -130,10 +161,19 @@ import {
   ElInput,
   ElTag,
   ElPopconfirm,
+  ElDialog,
 } from 'element-plus';
 import { ref, onMounted, nextTick } from 'vue';
 import type { UserListItem, UserListResp, User } from '#/api';
-import { reqUserList, reqAddOrUpdateUser, reqRemoveUser } from '#/api';
+import {
+  reqUserList,
+  reqAddOrUpdateUser,
+  reqRemoveUser,
+  reqUpdateUserstatus,
+  reqUpdateUser,
+} from '#/api';
+import type { FormOption, TableItem } from '#/components/tableEdit/type';
+import TableEdit from '#/components/tableEdit/index.vue';
 
 const userArr = ref<UserListItem[]>([]);
 
@@ -230,6 +270,71 @@ const deleteUser = async (userId: number) => {
     ElMessage({ type: 'success', message: '删除成功' });
     getHasUser(userArr.value.length > 1 ? pageNo.value : pageNo.value - 1);
   }
+};
+
+const search = () => {
+  getHasUser();
+};
+const clear = () => {
+  keyword.value = '';
+  getHasUser();
+};
+
+const updateUserstatus = async (row: UserListItem) => {
+  let result: any = await reqUpdateUserstatus({
+    id: row.id,
+    user_status: !row.user_status,
+  });
+  if (result !== null) {
+    ElMessage({ type: 'success', message: '更新成功' });
+    getHasUser(pageNo.value);
+  }
+};
+
+let options = ref<FormOption>({
+  labelWidth: '100px',
+  span: 24,
+  list: [
+    { type: 'input', label: '用户名', prop: 'username', required: true },
+    { type: 'input', label: '密码', prop: 'password',placeholder: '可选，不输入则不修改密码'},
+    { type: 'input', label: '昵称', prop: 'nickname' },
+    { type: 'input', label: '邮箱', prop: 'user_email' },
+    { type: 'input', label: '手机号', prop: 'user_phone' },
+  ],
+});
+
+const visible = ref(false);
+const isEdit = ref(false);
+const rowData = ref<TableItem>({
+  id: 0,
+  username: '',
+  nickname: '',
+  user_phone: '',
+  user_email: '',
+});
+const handleEdit = (row: UserListItem) => {
+  const rowDataKeys = Object.keys(rowData.value) as (keyof TableItem)[];
+  rowDataKeys.forEach((key) => {
+    if (key in row) {
+      rowData.value[key] = row[key] as never;
+    }
+  });
+
+  isEdit.value = true;
+  visible.value = true;
+};
+const updateData = async (data: TableItem) => {
+  closeDialog();
+  let result: any = await reqUpdateUser(data);
+  if (result !== null) {
+    ElMessage({ type: 'success', message: '更新成功' });
+    getHasUser(pageNo.value);
+  }
+};
+
+const closeDialog = () => {
+  visible.value = false;
+  isEdit.value = false;
 };
 </script>
 
