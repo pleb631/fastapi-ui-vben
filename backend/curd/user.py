@@ -1,4 +1,4 @@
-from sqlmodel import select, update
+from sqlmodel import select
 from models.base import User, Role, Access, RoleAccessLink, UserRoleLink
 from typing import List, Optional, Tuple
 from sqlalchemy.ext.asyncio import AsyncSession

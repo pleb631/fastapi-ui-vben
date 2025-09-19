@@ -92,8 +92,8 @@ class User(SQLModel, table=True):
     user_type: bool = Field(
         default=False, description="用户类型 True:超级管理员 False:普通管理员"
     )
-    password: str = Field(min_length=6, max_length=12, description="密码")
-    nickname: str = Field(default="pleb", max_length=255, description="昵称")
+    password: str = Field(max_length=255, description="密码")
+    nickname: Optional[str] = Field(max_length=255, description="昵称")
     user_phone: Optional[str] = Field(default=None, max_length=11, description="手机号")
     user_email: Optional[str] = Field(default=None, max_length=255, description="邮箱")
     full_name: Optional[str] = Field(default=None, max_length=255, description="姓名")

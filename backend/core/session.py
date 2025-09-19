@@ -18,7 +18,7 @@ print("DATABASE_URL:", DATABASE_URL)
 
 engine = create_async_engine(
     DATABASE_URL,
-    echo=True,
+    echo=False,
     pool_size=20,
     max_overflow=40,
     pool_timeout=30,

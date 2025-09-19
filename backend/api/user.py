@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Security, Request, Query, Body
 from starlette.responses import JSONResponse
-import datetime
 from typing import Annotated
 
 from core.session import SessionDep
@@ -22,7 +21,7 @@ from schemas.user import (
 from config import settings
 
 
-user_router = APIRouter(prefix="/user")
+user_router = APIRouter(prefix="/user",tags=["用户管理"])
 
 
 @user_router.get(
