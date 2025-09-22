@@ -21,7 +21,7 @@ access_router = APIRouter(prefix="/access", tags=["权限管理"])
 
 
 @access_router.get(
-    "/",
+    "",
     summary="权限查询",
     dependencies=[Security(check_permissions, scopes=["role_access"])],
 )
@@ -47,7 +47,7 @@ async def get_all_access(role_id: int, session: SessionDep):
 
 
 @access_router.put(
-    "/",
+    "",
     summary="权限设置",
     dependencies=[Security(check_permissions, scopes=["role_access"])],
 )

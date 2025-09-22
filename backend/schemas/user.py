@@ -1,6 +1,7 @@
 from sqlmodel import Field, SQLModel
 from typing import Dict, List, Optional
 from .base import BaseResp
+from pydantic import ConfigDict
 
 
 class UserCreate(SQLModel):
@@ -70,7 +71,17 @@ class UserListResp(BaseResp):
 class UpdateUserReq(SQLModel):
     id: int
     username: str = Field(min_length=3, max_length=10)
-    nickname: Optional[str] = Field(default=None,)
-    password: Optional[str] = Field(default=None,min_length=6, max_length=12)
-    user_phone: Optional[str] = Field(default=None,regex="^1[34567890]\\d{9}$")
-    user_email: Optional[str] = Field(default=None,)
+    nickname: Optional[str] = Field(
+        default=None,
+    )
+    password: Optional[str] = Field(default=None, min_length=6, max_length=12)
+    user_phone: Optional[str] = Field(default=None, regex="^1[34567890]\\d{9}$")
+    user_email: Optional[str] = Field(
+        default=None,
+    )
+
+
+class RoleAssignReq(SQLModel):
+
+    user_id: int = Field(description="用户ID")
+    role_ids: Optional[List[int]] = Field(description="角色ID列表")

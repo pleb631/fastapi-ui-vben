@@ -23,7 +23,7 @@ export interface RoleDataRes {
 
 export interface MenuData {
   key: number;
-  access_name:string;
+  access_name: string;
   parent_id: number;
   scopes: string;
   access_desc: string;
@@ -46,6 +46,17 @@ export const reqAllRoleList = (page: number, limit: number, roleName: string) =>
     },
   });
 
+export interface Role {
+  value: number;
+  label: string;
+}
+export type AllRole = Role[];
+
+export interface UserRoleResp {
+  all_role: AllRole;
+  user_roles: number[];
+}
+
 export const reqAddOrUpdateRole = (data: RoleData) =>
   requestClient.post<RoleDataRes>('/role', data);
 
@@ -55,6 +66,11 @@ export const reqRemoveRole = (id: number) =>
 export const reqAllMenuList = (id: number) =>
   requestClient.get<MenuDataRes>('/access', { params: { role_id: id } });
 
-
 export const reqSetPermission = (role_id: number, access: Number[]) =>
   requestClient.put('/access', { role_id, access });
+
+export const reqUpdateUserRole = (id: number, data: number[]) =>
+  requestClient.put('/user/set/role', { user_id: id, role_ids: data });
+
+export const reqGetUserRole = (id: number) =>
+  requestClient.get<UserRoleResp>('/role', { params: { user_id: id } });

@@ -1,7 +1,8 @@
-from sqlmodel import select
+from sqlmodel import select,delete,insert
 from models.base import User, Role, Access, RoleAccessLink, UserRoleLink
 from typing import List, Optional, Tuple
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 
 async def create_user(session: AsyncSession, username, password) -> Optional[User]:
@@ -81,4 +82,23 @@ async def update_user(session: AsyncSession, user_id: int, data) -> Optional[Use
     session.add(user)
     await session.commit()
     await session.refresh(user)
+    return user
+
+
+async def update_role(session: AsyncSession, user_id: int, roles: List[int]) -> Optional[User]:
+    stmt = select(User).options(selectinload(User.roles)).where(User.id == user_id)
+    user = (await session.execute(stmt)).scalars().one()
+    if not user:
+        return None
+    await session.execute(
+        delete(UserRoleLink).where(UserRoleLink.user_id == user_id)
+    )
+    
+
+    if roles:
+        links = [UserRoleLink(user_id=user_id, role_id=i) for i in roles]
+        session.add_all(links)
+        await session.commit()
+    await session.refresh(user)
+    
     return user

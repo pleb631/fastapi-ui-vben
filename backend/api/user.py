@@ -17,6 +17,7 @@ from schemas.user import (
     UserListItem,
     UserListResp,
     UpdateUserReq,
+    RoleAssignReq
 )
 from config import settings
 
@@ -164,7 +165,7 @@ async def update_user_status(
 
 
 @user_router.put(
-    "/",
+    "",
     summary="用户信息修改接口",
     response_class=JSONResponse,
     dependencies=[Security(check_permissions, scopes=["user_update"])],
@@ -179,3 +180,13 @@ async def update_user_info(post: UpdateUserReq, session: SessionDep):
     if not result:
         return fail(msg="更新失败!")
     return success(msg="更新成功!")
+
+
+@user_router.put("/set/role", summary="角色分配", dependencies=[Security(check_permissions, scopes=["user_role"])])
+async def set_role(post: RoleAssignReq, session: SessionDep):
+    print(post)
+    
+    result = await curd.user.update_role(session, user_id=post.user_id, roles=post.role_ids)
+    if not result:
+        return fail(msg="角色分配失败!")
+    return success(msg="角色分配成功!")

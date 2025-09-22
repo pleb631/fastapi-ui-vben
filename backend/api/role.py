@@ -12,7 +12,7 @@ role_router = APIRouter(prefix="/role", tags=["角色管理"])
 
 
 @role_router.get(
-    "/all",
+    "",
     summary="所有角色下拉选项接口",
     dependencies=[Security(check_permissions, scopes=["user_role"])],
 )
@@ -25,7 +25,7 @@ async def all_roles_options(*, user_id: int = Query(None), session: SessionDep):
 
 
 @role_router.post(
-    "/",
+    "",
     summary="角色添加和修改接口",
     dependencies=[Security(check_permissions, scopes=["role_add"])],
 )
@@ -45,7 +45,7 @@ async def create_role(post: CreateRole, session: SessionDep):
 
 
 @role_router.delete(
-    "/",
+    "",
     summary="角色删除",
     dependencies=[Security(check_permissions, scopes=["role_delete"])],
 )

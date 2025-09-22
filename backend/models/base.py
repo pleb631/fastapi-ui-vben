@@ -57,7 +57,7 @@ class Role(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     role_name: str = Field(unique=True, max_length=15, description="角色名称")
 
-    role_status: bool = Field(default=False, description="True:启用 False:禁用")
+    role_status: bool = Field(default=True, description="True:启用 False:禁用")
     role_desc: Optional[str] = Field(
         default=None, max_length=255, description="角色描述"
     )

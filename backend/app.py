@@ -5,9 +5,13 @@ from starlette.middleware.sessions import SessionMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.exceptions import RequestValidationError
-from fastapi.openapi.docs import (get_redoc_html, get_swagger_ui_html, get_swagger_ui_oauth2_redirect_html)
+from sqlalchemy.exc import NoResultFound, MultipleResultsFound
+from fastapi.openapi.docs import (
+    get_redoc_html,
+    get_swagger_ui_html,
+    get_swagger_ui_oauth2_redirect_html,
+)
 from fastapi.openapi.utils import get_openapi
-
 
 
 from config import settings
@@ -37,7 +41,6 @@ app = FastAPI(
 )
 
 
-
 # custom_openapi
 def custom_openapi():
     if app.openapi_schema:
@@ -49,9 +52,7 @@ def custom_openapi():
         title=settings.PROJECT_NAME,
         routes=app.routes,
     )
-    openapi_schema["info"]["x-logo"] = {
-        "url": "/static/logo-teal.png"
-    }
+    openapi_schema["info"]["x-logo"] = {"url": "/static/logo-teal.png"}
     app.openapi_schema = openapi_schema
     return app.openapi_schema
 
@@ -70,6 +71,7 @@ async def custom_swagger_ui_html():
         swagger_css_url="/static/swagger-ui.css",
     )
 
+
 # redoc
 @app.get("/redoc", include_in_schema=False)
 async def redoc_html():
@@ -80,11 +82,13 @@ async def redoc_html():
     )
 
 
-
 app.add_exception_handler(HTTPException, exception.http_error_handler)
 app.add_exception_handler(RequestValidationError, exception.http422_error_handler)
-app.add_exception_handler(exception.UnicornException, exception.unicorn_exception_handler)
-
+app.add_exception_handler(
+    exception.UnicornException, exception.unicorn_exception_handler
+)
+app.add_exception_handler(NoResultFound, exception.mysql_does_not_exist)
+app.add_exception_handler(MultipleResultsFound, exception.mysql_multiple_exist)
 
 app.include_router(all_router)
 
@@ -94,7 +98,7 @@ app.add_middleware(
     SessionMiddleware,
     secret_key=settings.SECRET_KEY,
     session_cookie=settings.SESSION_COOKIE,
-    max_age=settings.SESSION_MAX_AGE
+    max_age=settings.SESSION_MAX_AGE,
 )
 app.add_middleware(
     CORSMiddleware,
@@ -112,4 +116,4 @@ app.state.views = Jinja2Templates(directory=settings.TEMPLATE_DIR)
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run("app:app", host="0.0.0.0", port=15555,reload=True)
+    uvicorn.run("app:app", host="0.0.0.0", port=15555, reload=True)
