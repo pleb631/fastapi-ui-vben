@@ -184,7 +184,6 @@ async def update_user_info(post: UpdateUserReq, session: SessionDep):
 
 @user_router.put("/set/role", summary="角色分配", dependencies=[Security(check_permissions, scopes=["user_role"])])
 async def set_role(post: RoleAssignReq, session: SessionDep):
-    print(post)
     
     result = await curd.user.update_role(session, user_id=post.user_id, roles=post.role_ids)
     if not result:
