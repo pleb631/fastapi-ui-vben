@@ -14,7 +14,7 @@ class Middleware:
         self.app = app
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
-        if scope["type"] not in ("http", "websocket"):  # pragma: no 
+        if scope["type"] not in ("http"):  # pragma: no 
             await self.app(scope, receive, send)
             return
         start_time = time.time()

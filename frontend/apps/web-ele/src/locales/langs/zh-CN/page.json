@@ -11,9 +11,12 @@
     "analytics": "分析页",
     "workspace": "工作台"
   },
-  "user":{
-    "title":"用户中心",
-    "userManagement":"用户管理",
-    "roleManagement":"角色管理"
-}
+  "user": {
+    "title": "用户中心",
+    "userManagement": "用户管理",
+    "roleManagement": "角色管理"
+  },
+  "chatRoom": {
+    "title": "聊天室"
+  }
 }

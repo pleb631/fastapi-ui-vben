@@ -15,5 +15,8 @@
     "title": "User Center",
     "userManagement": "User Management",
     "roleManagement": "Role Management"
+  },
+  "chatRoom": {
+    "title": "Chat Room"
   }
 }
