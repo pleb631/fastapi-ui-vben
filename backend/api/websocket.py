@@ -87,7 +87,6 @@ class Echo(WebSocketEndpoint):
 
             data = {"action": "refresh_online_user", "data": online_user}
             time.sleep(0.5)
-            print(self.active_connections)
             for con in self.active_connections:
                 await con["con"].send_json(data)
         except WebSocketDisconnect:
@@ -119,7 +118,6 @@ class Echo(WebSocketEndpoint):
             print(e)
 
     async def on_disconnect(self, web_socket, close_code):
-        print(web_socket,self.active_connections)
         for con in self.active_connections:
             if con["con"] == web_socket:
                 
