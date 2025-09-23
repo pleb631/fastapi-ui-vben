@@ -5,6 +5,7 @@ import asyncio
 from core.session import async_session_maker, engine
 from models.base import User, Access, Role, UserRoleLink, RoleAccessLink
 from core.utils import en_password
+from config import settings
 
 
 async def main():
@@ -17,7 +18,7 @@ async def main():
     async with async_session_maker() as session:
 
         user = User(
-            username="root",
+            username=settings.SUPERUSER,
             password=en_password("12345678"),
             user_type=True,
             user_status=True,

@@ -1,7 +1,7 @@
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 from sqlmodel import Field, SQLModel, Relationship
 from datetime import datetime
-from sqlalchemy import Column, ForeignKey, func, DateTime, Text, Integer
+from sqlalchemy import Column, ForeignKey, func, DateTime, Text, Integer, JSON
 
 
 def create_time_col():
@@ -88,7 +88,9 @@ class User(SQLModel, table=True):
         link_model=UserRoleLink,
         sa_relationship_kwargs={"passive_deletes": True},
     )
-    username: str = Field(unique=True,min_length=3, max_length=10, description="用户名")
+    username: str = Field(
+        unique=True, min_length=3, max_length=10, description="用户名"
+    )
     user_type: bool = Field(
         default=False, description="用户类型 True:超级管理员 False:普通管理员"
     )
@@ -105,6 +107,11 @@ class User(SQLModel, table=True):
         default=None, max_length=64, description="访问IP"
     )
 
+    wechat: Optional["UserWechat"] = Relationship(
+        back_populates="user",
+        sa_relationship_kwargs={"uselist": False, "cascade": "all, delete-orphan"},
+    )
+
     create_time: datetime = create_time_col()
     update_time: datetime = update_time_col()
 
@@ -118,7 +125,12 @@ class Access(SQLModel, table=True):
     parent_id: Optional[int] = Field(
         default=None,
         description="父级权限ID",
-        sa_column=Column(Integer, ForeignKey("access.id", ondelete="CASCADE"), index=True, nullable=True),
+        sa_column=Column(
+            Integer,
+            ForeignKey("access.id", ondelete="CASCADE"),
+            index=True,
+            nullable=True,
+        ),
     )
 
     parent: Optional["Access"] = Relationship(
@@ -172,6 +184,46 @@ class AccessLog(SQLModel, table=True):
     request_params: Optional[str] = Field(Column(Text), description="请求参数")
     ip: Optional[str] = Field(default=None, max_length=32, description="访问IP")
     note: Optional[str] = Field(default=None, max_length=255, description="备注")
+
+    create_time: datetime = create_time_col()
+    update_time: datetime = update_time_col()
+
+
+class SystemParams(SQLModel, table=True):
+    __tablename__ = "system_params"
+    __table_args__ = ({"comment": "系统参数表"},)
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    params_name: str = Field(unique=True, max_length=255, description="参数名")
+    params: Dict[str, Any] = Field(
+        default_factory=dict, sa_column=Column(JSON, nullable=False)
+    )
+
+    create_time: datetime = create_time_col()
+    update_time: datetime = update_time_col()
+
+
+class UserWechat(SQLModel, table=True):
+    __tablename__ = "user_wechat"
+    __table_args__ = ({"comment": "用户微信"},)
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    user_id: int = Field(foreign_key="user.id", index=True, nullable=False)
+    city: Optional[str] = Field(default=None, max_length=255, description="城市")
+    country: Optional[str] = Field(default=None, max_length=255, description="国家")
+    headimgurl: Optional[str] = Field(
+        default=None, max_length=255, description="微信头像"
+    )
+    nickname: Optional[str] = Field(
+        default=None, max_length=255, description="微信昵称"
+    )
+    openid: Optional[str] = Field(default=None, max_length=255, description="openid")
+    unionid: Optional[str] = Field(default=None, max_length=255, description="unionid")
+    province: Optional[str] = Field(default=None, max_length=255, description="省份")
+    gender: Optional[str] = Field(default=None, description="性别")
+    user: Optional["User"] = Relationship(
+        back_populates="wechat",
+    )
 
     create_time: datetime = create_time_col()
     update_time: datetime = update_time_col()
