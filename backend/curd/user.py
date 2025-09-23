@@ -3,6 +3,7 @@ from models.base import User, Role, Access, RoleAccessLink, UserRoleLink
 from typing import List, Optional, Tuple
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
+from config import settings
 
 
 async def create_user(session: AsyncSession, username, password) -> Optional[User]:
@@ -21,14 +22,14 @@ async def get_user(
 ) -> Optional[User]:
     if user_id is None and username is None:
         return None
-    stmt = select(User)
-    if user_id is not None:
+    stmt = select(User).options(selectinload(User.roles))
+    if user_id is not None: 
         stmt = stmt.where(User.id == user_id)
     if username is not None:
         stmt = stmt.where(User.username == username)
 
     result = await session.execute(stmt)
-    user = result.scalars().first()
+    user = result.scalars().one_or_none()
     return user
 
 
@@ -36,6 +37,8 @@ async def delete_user(session: AsyncSession, user_id: int) -> Optional[User]:
     result = await session.execute(select(User).where(User.id == user_id))
     user = result.scalars().first()
     if not user:
+        return None
+    if user.username == settings.SUPERUSER:
         return None
     await session.delete(user)
     await session.commit()

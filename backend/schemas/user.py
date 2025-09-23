@@ -27,6 +27,7 @@ class UserInfo(SQLModel):
     user_status: bool
     avatar: Optional[str]
     gender: int
+    roles: List[str] = Field(default=[])
 
 
 class UserInfoResp(BaseResp):

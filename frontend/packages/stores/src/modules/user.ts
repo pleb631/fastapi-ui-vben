@@ -12,6 +12,7 @@ interface BasicUserInfo {
   user_status: boolean;
   avatar?: string;
   gender: number;
+  roles?: string[];
 }
 
 interface AccessState {
@@ -28,6 +29,9 @@ export const useUserStore = defineStore('core-user', {
   actions: {
     setUserInfo(userInfo: BasicUserInfo | null) {
       this.userInfo = userInfo;
+      if (userInfo?.roles){
+        this.setUserRoles(userInfo.roles);
+      }
     },
     setUserRoles(roles: string[]) {
       this.userRoles = roles;

@@ -54,5 +54,7 @@ class Config(BaseSettings):
         )
     REDIS_URL: str = f"redis://{os.getenv('REDIS_HOST', '127.0.0.1')}:{os.getenv('REDIS_PORT', 6379)}"
 
+    SUPERUSER: str = "root"
+
 
 settings = Config()

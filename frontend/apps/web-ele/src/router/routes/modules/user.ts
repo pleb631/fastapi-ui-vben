@@ -16,7 +16,6 @@ const routes: RouteRecordRaw[] = [
       {
         meta: {
           title: $t('page.user.userManagement'),
-          authority: ['admin'],
         },
         name: 'user',
         path: '/acl/user',

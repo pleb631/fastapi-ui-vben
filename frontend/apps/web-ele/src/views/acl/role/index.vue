@@ -35,6 +35,7 @@
             </el-button>
             <el-button type="primary" size="small"> 编辑 </el-button>
             <el-popconfirm
+            v-if="hasAccessByCodes(['GodKey'])"
               :title="`你确定要删除${row.role_name}?`"
               width="260px"
               @confirm="removeRole(row.id)"
@@ -102,6 +103,10 @@
   </div>
 </template>
 <script lang="ts" setup>
+
+import { useAccess } from '@vben/access';
+const { hasAccessByCodes } = useAccess();
+
 import { ref, onMounted, nextTick } from 'vue';
 import {
   ElCard,

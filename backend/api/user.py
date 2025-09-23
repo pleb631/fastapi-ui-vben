@@ -34,9 +34,19 @@ user_router = APIRouter(prefix="/user",tags=["用户管理"])
 async def get_user_info(req: Request, session: SessionDep):
     user_id = req.state.user_id
     user_data = await curd.user.get_user(session, user_id=user_id)
+
     if not user_data:
         return fail(msg=f"用户ID{user_id}不存在!")
-    user_info = UserInfo(**user_data.model_dump())
+
+
+    roles = user_data.roles
+    user_data = user_data.model_dump()
+    
+    if roles:
+        roles = [role.role_name for role in roles]
+    user_data["roles"] = roles
+
+    user_info = UserInfo(**user_data)
 
     return success(msg="用户信息", data=user_info)
 
@@ -123,8 +133,11 @@ async def get_user_codes(req: Request, session: SessionDep):
     if not user_data:
         return fail(msg=f"用户ID{user_id}不存在!")
     else:
-        codes = "admin" if user_data.user_type else "user"
-        return success(msg="用户权限", data=[codes])
+        if user_data.user_type and user_data.username == settings.SUPERUSER:
+            codes = ["GodKey"]
+        else:
+            codes = []
+        return success(msg="用户权限", data=codes)
 
 
 @user_router.get(

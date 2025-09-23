@@ -73,12 +73,13 @@
                   type="primary"
                   size="small"
                   plain
-                  :disabled="row.user_type"
+                  :disabled="(row.user_type&& !userStore.userInfo?.user_type)||row.id===userStore.userInfo?.id"
                   >{{ !row.user_status ? '启用' : '禁用' }}</el-button
                 >
               </template>
             </el-popconfirm>
             <el-popconfirm
+              v-if="hasAccessByCodes(['GodKey'])"
               :title="`你确定要删除${row.username}?`"
               width="260px"
               @confirm="deleteUser(row.id)"
@@ -186,6 +187,9 @@
   </div>
 </template>
 <script lang="ts" setup>
+
+import { useAccess } from '@vben/access';
+const { hasAccessByCodes } = useAccess();
 // 引入
 import {
   ElCard,
@@ -217,6 +221,11 @@ import {
 } from '#/api';
 import type { FormOption, TableItem } from '#/components/tableEdit/type';
 import TableEdit from '#/components/tableEdit/index.vue';
+
+
+import {useAccessStore, useUserStore } from '@vben/stores';
+
+const userStore = useUserStore();
 
 const userArr = ref<UserListItem[]>([]);
 
