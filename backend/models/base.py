@@ -1,59 +1,59 @@
 from typing import Optional, List, Dict, Any
 from sqlmodel import Field, SQLModel, Relationship
 from datetime import datetime
-from sqlalchemy import Column, ForeignKey, func, DateTime, Text, Integer, JSON
+from sqlalchemy import Column, func, Text, JSON
 
 
-def create_time_col():
-    return Field(
+class TimestampMixin(SQLModel, table=False):
+    create_time: datetime = Field(
         description="创建时间",
-        sa_column=Column(
-            DateTime(timezone=True), nullable=False, server_default=func.now()
-        ),
+        nullable=False,
+        sa_column_kwargs={"server_default": func.now()},
     )
-
-
-def update_time_col():
-    return Field(
+    update_time: datetime = Field(
         description="更新时间",
-        sa_column=Column(
-            DateTime(timezone=True),
-            nullable=False,
-            server_default=func.now(),
-            onupdate=func.now(),
-        ),
+        nullable=False,
+        sa_column_kwargs={
+            "server_default": func.now(),
+            "onupdate": func.now(),
+        },
     )
 
 
 class UserRoleLink(SQLModel, table=True):
     __tablename__ = "user_role_link"
+
     user_id: int = Field(
-        sa_column=Column(
-            ForeignKey("user.id", ondelete="CASCADE"),
-            primary_key=True,
-        )
+        ondelete="CASCADE",
+        foreign_key="user.id",
+        primary_key=True,
     )
     role_id: int = Field(
-        sa_column=Column(
-            ForeignKey("role.id", ondelete="CASCADE"),
-            primary_key=True,
-        )
+        ondelete="CASCADE",
+        foreign_key="role.id",
+        primary_key=True,
     )
 
 
 class RoleAccessLink(SQLModel, table=True):
     __tablename__ = "role_access_link"
+
     role_id: int = Field(
-        sa_column=Column(ForeignKey("role.id", ondelete="CASCADE"), primary_key=True)
+        ondelete="CASCADE",
+        foreign_key="role.id",
+        primary_key=True,
     )
     access_id: int = Field(
-        sa_column=Column(ForeignKey("access.id", ondelete="CASCADE"), primary_key=True)
+        ondelete="CASCADE",
+        foreign_key="access.id",
+        primary_key=True,
     )
 
 
-class Role(SQLModel, table=True):
+class Role(TimestampMixin, table=True):
     __tablename__ = "role"
-    __table_args__ = ({"comment": "角色表"},)
+    __table_args__ = {"comment": "角色表"}
+
     id: Optional[int] = Field(default=None, primary_key=True)
     role_name: str = Field(unique=True, max_length=15, description="角色名称")
 
@@ -65,28 +65,27 @@ class Role(SQLModel, table=True):
     users: List["User"] = Relationship(
         back_populates="roles",
         link_model=UserRoleLink,
-        sa_relationship_kwargs={"passive_deletes": True},
+        passive_deletes="all",
+        sa_relationship_kwargs={"lazy": "raise_on_sql"},
     )
     accesses: List["Access"] = Relationship(
         back_populates="roles",
         link_model=RoleAccessLink,
-        sa_relationship_kwargs={
-            "passive_deletes": True,
-        },
+        passive_deletes="all",
+        sa_relationship_kwargs={"lazy": "raise_on_sql"},
     )
 
-    create_time: datetime = create_time_col()
-    update_time: datetime = update_time_col()
 
-
-class User(SQLModel, table=True):
+class User(TimestampMixin, table=True):
     __tablename__ = "user"
     __table_args__ = ({"comment": "用户表"},)
+
     id: Optional[int] = Field(default=None, primary_key=True)
     roles: List["Role"] = Relationship(
         back_populates="users",
         link_model=UserRoleLink,
-        sa_relationship_kwargs={"passive_deletes": True},
+        passive_deletes="all",
+        sa_relationship_kwargs={"lazy": "raise_on_sql"},
     )
     username: str = Field(
         unique=True, min_length=3, max_length=10, description="用户名"
@@ -109,44 +108,38 @@ class User(SQLModel, table=True):
 
     wechat: Optional["UserWechat"] = Relationship(
         back_populates="user",
-        sa_relationship_kwargs={"uselist": False, "cascade": "all, delete-orphan"},
+        cascade_delete=True,
     )
 
-    create_time: datetime = create_time_col()
-    update_time: datetime = update_time_col()
 
-
-class Access(SQLModel, table=True):
+class Access(TimestampMixin, table=True):
     __tablename__ = "access"
-    __table_args__ = ({"comment": "权限表"},)
+    __table_args__ = {"comment": "权限表"}
+
     id: Optional[int] = Field(default=None, primary_key=True)
     access_name: str = Field(unique=True, max_length=15, description="权限名称")
 
     parent_id: Optional[int] = Field(
         default=None,
         description="父级权限ID",
-        sa_column=Column(
-            Integer,
-            ForeignKey("access.id", ondelete="CASCADE"),
-            index=True,
-            nullable=True,
-        ),
+        foreign_key="access.id",
+        ondelete="CASCADE",
+        index=True,
+        nullable=True,
     )
 
     parent: Optional["Access"] = Relationship(
+        back_populates="children",
         sa_relationship_kwargs={
             "remote_side": "Access.id",
-            "passive_deletes": True,
         },
-        back_populates="children",
     )
     children: List["Access"] = Relationship(
+        passive_deletes="all",
+        back_populates="parent",
         sa_relationship_kwargs={
-            "cascade": "all, delete-orphan",
-            "passive_deletes": True,
             "single_parent": True,
         },
-        back_populates="parent",
     )
     scopes: str = Field(unique=True, max_length=255, description="权限范围")
     access_desc: Optional[str] = Field(
@@ -161,14 +154,12 @@ class Access(SQLModel, table=True):
     roles: List[Role] = Relationship(
         back_populates="accesses",
         link_model=RoleAccessLink,
-        sa_relationship_kwargs={"passive_deletes": True},
+        passive_deletes="all",
+        sa_relationship_kwargs={"lazy": "raise_on_sql"},
     )
 
-    create_time: datetime = create_time_col()
-    update_time: datetime = update_time_col()
 
-
-class AccessLog(SQLModel, table=True):
+class AccessLog(TimestampMixin, table=True):
     __tablename__ = "access_log"
     __table_args__ = ({"comment": "用户操作记录表"},)
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -185,11 +176,8 @@ class AccessLog(SQLModel, table=True):
     ip: Optional[str] = Field(default=None, max_length=32, description="访问IP")
     note: Optional[str] = Field(default=None, max_length=255, description="备注")
 
-    create_time: datetime = create_time_col()
-    update_time: datetime = update_time_col()
 
-
-class SystemParams(SQLModel, table=True):
+class SystemParams(TimestampMixin, table=True):
     __tablename__ = "system_params"
     __table_args__ = ({"comment": "系统参数表"},)
 
@@ -199,16 +187,13 @@ class SystemParams(SQLModel, table=True):
         default_factory=dict, sa_column=Column(JSON, nullable=False)
     )
 
-    create_time: datetime = create_time_col()
-    update_time: datetime = update_time_col()
 
-
-class UserWechat(SQLModel, table=True):
+class UserWechat(TimestampMixin, table=True):
     __tablename__ = "user_wechat"
     __table_args__ = ({"comment": "用户微信"},)
 
     id: Optional[int] = Field(default=None, primary_key=True)
-    user_id: int = Field(foreign_key="user.id", index=True, nullable=False)
+    user_id: int = Field(foreign_key="user.id", index=True, nullable=False,ondelete="CASCADE")
     city: Optional[str] = Field(default=None, max_length=255, description="城市")
     country: Optional[str] = Field(default=None, max_length=255, description="国家")
     headimgurl: Optional[str] = Field(
@@ -224,6 +209,3 @@ class UserWechat(SQLModel, table=True):
     user: Optional["User"] = Relationship(
         back_populates="wechat",
     )
-
-    create_time: datetime = create_time_col()
-    update_time: datetime = update_time_col()

@@ -1,18 +1,16 @@
-from fastapi import Request
-from fastapi.security import SecurityScopes
-from datetime import timedelta, datetime, UTC
 import jwt
-from fastapi import HTTPException, Request, Depends
-from fastapi.security.oauth2 import OAuth2PasswordBearer
-from starlette import status
-from jwt import PyJWTError
-from pydantic import ValidationError
 from typing import List
+from fastapi import Request
+from fastapi.security import SecurityScopes,OAuth2PasswordBearer
+from datetime import timedelta, datetime, UTC
+from fastapi import HTTPException, Request, Depends
+from starlette import status
+from pydantic import ValidationError
 
 
+import curd
 from models.base import Access
 from config import settings
-import curd
 from core.session import SessionDep
 
 
@@ -79,7 +77,7 @@ async def check_permissions(
             detail="凭证已证过期",
             headers={"WWW-Authenticate": f"Bearer {token}"},
         )
-    except (PyJWTError, ValidationError):
+    except (jwt.PyJWTError, ValidationError):
 
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
